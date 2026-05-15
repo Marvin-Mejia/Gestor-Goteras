@@ -418,10 +418,10 @@
                     commentsHtml += '</div>';
                 }
                 let botonesHtml = '';
-                if(currentRole === 'admin'){
+                if(currentRole === 'Admin'){
                     botonesHtml += `<button class="delete-gotera-btn" data-id="${punto.id}">🗑 Eliminar esta gotera</button>`;
                 }
-                if(currentRole === 'mantenimiento'){
+                if(currentRole === 'Mantenimiento'){
                     botonesHtml += `<button class="add-comment-btn" data-id="${punto.id}">✏️ Agregar comentario</button>`;
                 }
                 const popupContent = `
@@ -438,14 +438,14 @@
                     .bindPopup(popupContent, { maxWidth: 280 });
                 
                 marker.on('popupopen', function() {
-                    if(currentRole === 'admin'){
+                    if(currentRole === 'Admin'){
                         const btn = document.querySelector(`.delete-gotera-btn[data-id="${punto.id}"]`);
                         if(btn && !btn.hasListener){
                             btn.addEventListener('click', () => eliminarGotera(punto.id));
                             btn.hasListener = true;
                         }
                     }
-                    if(currentRole === 'mantenimiento'){
+                    if(currentRole === 'Mantenimiento'){
                         const btn = document.querySelector(`.add-comment-btn[data-id="${punto.id}"]`);
                         if(btn && !btn.hasListener){
                             btn.addEventListener('click', () => agregarComentario(punto.id));
@@ -459,7 +459,7 @@
         }
         
         async function eliminarGotera(idGotera) {
-            if(currentRole !== 'admin') { mostrarToast("No tienes permisos para eliminar"); return; }
+            if(currentRole !== 'Admin') { mostrarToast("No tienes permisos para eliminar"); return; }
             if (!confirm('¿Eliminar esta gotera para todos?')) return;
             const nuevaLista = goteras.filter(g => g.id !== idGotera);
             if (nuevaLista.length === goteras.length) return;
@@ -471,7 +471,7 @@
         }
         
         async function limpiarTodasGoteras() {
-            if(currentRole !== 'admin') { mostrarToast("No tienes permisos para eliminar todas"); return; }
+            if(currentRole !== 'Admin') { mostrarToast("No tienes permisos para eliminar todas"); return; }
             if (!confirm('⚠️ ¿BORRAR TODAS LAS GOTERAS? Esto afecta a TODOS los usuarios.')) return;
             goteras = [];
             actualizarMarcadores();
@@ -481,7 +481,7 @@
         }
         
         async function agregarComentario(idGotera) {
-            if(currentRole !== 'mantenimiento') { mostrarToast("Solo mantenimiento puede comentar"); return; }
+            if(currentRole !== 'Mantenimiento') { mostrarToast("Solo mantenimiento puede comentar"); return; }
             const comentario = prompt("Escribe el comentario (ej: pendiente de reparar por insumo):");
             if(!comentario || comentario.trim() === "") return;
             const gotera = goteras.find(g => g.id === idGotera);
@@ -496,7 +496,7 @@
         }
         
         async function agregarGotera(lat, lng) {
-            if(currentRole !== 'user' && currentRole !== 'admin') { 
+            if(currentRole !== 'User' && currentRole !== 'Admin') { 
                 mostrarToast("Solo el rol 'user' puede agregar nuevas goteras"); 
                 return; 
             }
