@@ -2,8 +2,8 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, User-scalable=yes, viewport-fit=cover">
-    <title>Gestor de goteras- Gildan|</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>Gestor de goteras - Gildan</title>
     <!-- Leaflet CSS y JS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -176,21 +176,23 @@
             width: 100%;
         }
         .add-comment-btn { background-color: #2c7da0; }
-.comment-list {
-    font-size: 0.75rem;
-    background: #1e2a32;
-    padding: 6px;
-    border-radius: 12px;
-    margin-top: 8px;
-    max-height: 100px;
-    overflow-y: auto;
-    color: white;          /* ← texto blanco para todo el bloque */
-}
-.comment-item {
-    border-bottom: 1px solid #3a4a54;
-    padding: 4px;
-    color: white;          /* ← texto blanco en cada comentario */
- }
+        
+        /* --- CORRECCIÓN: comentarios con texto blanco --- */
+        .comment-list {
+            font-size: 0.75rem;
+            background: #1e2a32;
+            padding: 6px;
+            border-radius: 12px;
+            margin-top: 8px;
+            max-height: 100px;
+            overflow-y: auto;
+            color: white;
+        }
+        .comment-item {
+            border-bottom: 1px solid #3a4a54;
+            padding: 4px;
+            color: white;
+        }
         
         .logo-container {
             position: fixed;
@@ -222,7 +224,7 @@
             font-size: 12px;
             filter: drop-shadow(0 1px 1px rgba(0,0,0,0.3));
         }
-        .User-badge {
+        .user-badge {
             position: fixed;
             top: 15px;
             right: 15px;
@@ -281,16 +283,16 @@
             <div class="estado" id="estadoConexion">✅ Conectado</div>
         </div>
         <div class="loading-indicator" id="loadingIndicator"></div>
-        <div id="UserBadge" class="User-badge"></div>
+        <div id="userBadge" class="user-badge"></div>
         <div id="logoutBtn" class="logout-btn">🚪 Salir</div>
     </div>
 
     <script>
         // ==================== CREDENCIALES ====================
-        const Users = {
-            User: { password: "User", role: "User" },
-            Mantenimiento: { password: "Mantenimiento", role: "Mantenimiento" },
-            Admin: { password: "Hola", role: "Admin" }
+        const users = {
+            user: { password: "user", role: "user" },
+            mantenimiento: { password: "mantenimiento", role: "mantenimiento" },
+            admin: { password: "hola", role: "admin" }
         };
         
         let currentUser = null;
@@ -418,10 +420,10 @@
                     commentsHtml += '</div>';
                 }
                 let botonesHtml = '';
-                if(currentRole === 'Admin'){
+                if(currentRole === 'admin'){
                     botonesHtml += `<button class="delete-gotera-btn" data-id="${punto.id}">🗑 Eliminar esta gotera</button>`;
                 }
-                if(currentRole === 'Mantenimiento'){
+                if(currentRole === 'mantenimiento'){
                     botonesHtml += `<button class="add-comment-btn" data-id="${punto.id}">✏️ Agregar comentario</button>`;
                 }
                 const popupContent = `
@@ -438,14 +440,14 @@
                     .bindPopup(popupContent, { maxWidth: 280 });
                 
                 marker.on('popupopen', function() {
-                    if(currentRole === 'Admin'){
+                    if(currentRole === 'admin'){
                         const btn = document.querySelector(`.delete-gotera-btn[data-id="${punto.id}"]`);
                         if(btn && !btn.hasListener){
                             btn.addEventListener('click', () => eliminarGotera(punto.id));
                             btn.hasListener = true;
                         }
                     }
-                    if(currentRole === 'Mantenimiento'){
+                    if(currentRole === 'mantenimiento'){
                         const btn = document.querySelector(`.add-comment-btn[data-id="${punto.id}"]`);
                         if(btn && !btn.hasListener){
                             btn.addEventListener('click', () => agregarComentario(punto.id));
@@ -459,7 +461,7 @@
         }
         
         async function eliminarGotera(idGotera) {
-            if(currentRole !== 'Admin') { mostrarToast("No tienes permisos para eliminar"); return; }
+            if(currentRole !== 'admin') { mostrarToast("No tienes permisos para eliminar"); return; }
             if (!confirm('¿Eliminar esta gotera para todos?')) return;
             const nuevaLista = goteras.filter(g => g.id !== idGotera);
             if (nuevaLista.length === goteras.length) return;
@@ -471,7 +473,7 @@
         }
         
         async function limpiarTodasGoteras() {
-            if(currentRole !== 'Admin') { mostrarToast("No tienes permisos para eliminar todas"); return; }
+            if(currentRole !== 'admin') { mostrarToast("No tienes permisos para eliminar todas"); return; }
             if (!confirm('⚠️ ¿BORRAR TODAS LAS GOTERAS? Esto afecta a TODOS los usuarios.')) return;
             goteras = [];
             actualizarMarcadores();
@@ -481,7 +483,7 @@
         }
         
         async function agregarComentario(idGotera) {
-            if(currentRole !== 'Mantenimiento') { mostrarToast("Solo Mantenimiento puede comentar"); return; }
+            if(currentRole !== 'mantenimiento') { mostrarToast("Solo mantenimiento puede comentar"); return; }
             const comentario = prompt("Escribe el comentario (ej: pendiente de reparar por insumo):");
             if(!comentario || comentario.trim() === "") return;
             const gotera = goteras.find(g => g.id === idGotera);
@@ -495,9 +497,11 @@
             }
         }
         
+        // ========== FUNCIÓN MODIFICADA: mensaje corregido y log ==========
         async function agregarGotera(lat, lng) {
-            if(currentRole !== 'User' && currentRole !== 'Admin') { 
-                mostrarToast("Solo el rol 'User' puede agregar nuevas goteras"); 
+            console.log(`Intentando agregar gotera. Rol actual: ${currentRole}`);
+            if(currentRole !== 'user' && currentRole !== 'admin') { 
+                mostrarToast("❌ Solo los roles 'user' o 'admin' pueden agregar goteras"); 
                 return; 
             }
             const nuevaGotera = {
@@ -535,7 +539,7 @@
                 zoomControl: true
             }).setView([DEFAULT_LAT, DEFAULT_LNG], DEFAULT_ZOOM);
             
-            // Capa satelital de Google (tiles hasta zoom 22, luego escalado digital hasta 30)
+            // Capa satelital de Google
             const googleSatellite = L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
                 attribution: '&copy; Google Earth',
                 maxZoom: 30,
@@ -544,7 +548,6 @@
                 subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
             }).addTo(map);
             
-            // Capa de etiquetas opcional
             const googleLabels = L.tileLayer('https://mt1.google.com/vt/lyrs=h&x={x}&y={y}&z={z}', {
                 attribution: '&copy; Google',
                 maxZoom: 30,
@@ -554,7 +557,6 @@
             
             L.control.layers({ "🛰️ Satélite HD": googleSatellite }, { "🏷️ Etiquetas": googleLabels }, { position: 'topright' }).addTo(map);
             
-            // Forzar que la capa base sea siempre satélite
             map.on('baselayerchange', (e) => {
                 if(e.name !== "🛰️ Satélite HD") {
                     map.removeLayer(e.layer);
@@ -570,18 +572,18 @@
                 popupAnchor: [0, -5] 
             });
             
-            // Configurar eventos de la interfaz
+            // Eventos de botones
             document.getElementById('miUbicacionBtn').addEventListener('click', irMiUbicacion);
             document.getElementById('sincronizarBtn').addEventListener('click', () => cargarDesdeNube());
             
-            if(currentRole === 'Admin'){
+            if(currentRole === 'admin'){
                 const limpiarBtn = document.getElementById('limpiarBtn');
                 limpiarBtn.style.display = 'block';
                 limpiarBtn.addEventListener('click', limpiarTodasGoteras);
             }
             
-            // Botón "Marcar centro" solo para User y Admin
-            if(currentRole === 'User' || currentRole === 'Admin'){
+            // Botón "Marcar centro" para user y admin
+            if(currentRole === 'user' || currentRole === 'admin'){
                 const botonCentro = document.createElement('button');
                 botonCentro.innerText = '➕ Marcar centro';
                 botonCentro.style.background = '#27ae60';
@@ -594,30 +596,25 @@
                 });
             }
             
+            // Doble click en el mapa
             map.on('dblclick', (e) => {
-                if(currentRole === 'User' || currentRole === 'Admin') 
+                if(currentRole === 'user' || currentRole === 'admin') 
                     agregarGotera(e.latlng.lat, e.latlng.lng);
                 else 
-                    mostrarToast("Solo usuario User puede agregar goteras");
+                    mostrarToast("❌ Solo los roles 'user' o 'admin' pueden agregar goteras");
             });
             
-            // Cargar datos
+            // Cargar datos y sincronización periódica
             cargarDesdeNube();
             setInterval(() => cargarDesdeNube(), 15000);
             
-            // Marcador de referencia
             L.marker([DEFAULT_LAT, DEFAULT_LNG], { icon: L.divIcon({ html: '🏁', iconSize: [22, 22] }) })
                 .bindPopup('📍 Ubicación predeterminada').addTo(map);
             
-            // Forzar redimensionamiento del mapa después de mostrarlo
             setTimeout(() => {
-                if(map) {
-                    map.invalidateSize(true);
-                    console.log("Mapa redimensionado con zoom x30 disponible");
-                }
+                if(map) map.invalidateSize(true);
             }, 200);
             
-            // También al redimensionar la ventana
             window.addEventListener('resize', () => {
                 if(map) map.invalidateSize();
             });
@@ -628,11 +625,10 @@
             mostrarToast("🛰️ Obteniendo GPS...", 1500);
             navigator.geolocation.getCurrentPosition(
                 (pos) => {
-                    // Al centrar, usar zoom alto (ej: 20) para aprovechar el zoom x30
                     map.setView([pos.coords.latitude, pos.coords.longitude], 20);
                     if(window.miUbicacionMarker) map.removeLayer(window.miUbicacionMarker);
-                    const UserIcon = L.divIcon({ html: '🧍‍♂️📍', iconSize: [26,26] });
-                    window.miUbicacionMarker = L.marker([pos.coords.latitude, pos.coords.longitude], { icon: UserIcon })
+                    const userIcon = L.divIcon({ html: '🧍‍♂️📍', iconSize: [26,26] });
+                    window.miUbicacionMarker = L.marker([pos.coords.latitude, pos.coords.longitude], { icon: userIcon })
                         .bindPopup('📍 Tu ubicación actual').addTo(map);
                     window.miUbicacionMarker.openPopup();
                     setTimeout(() => window.miUbicacionMarker?.closePopup(), 4000);
@@ -644,10 +640,10 @@
         }
         
         // ==================== LOGIN ====================
-        function login(User, pass) {
-            if(Users[User] && Users[User].password === pass){
-                currentUser = User;
-                currentRole = Users[User].role;
+        function login(user, pass) {
+            if(users[user] && users[user].password === pass){
+                currentUser = user;
+                currentRole = users[user].role;
                 dispositivoId = localStorage.getItem('dispositivoId');
                 if (!dispositivoId) {
                     dispositivoId = 'dev_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
@@ -655,7 +651,7 @@
                 }
                 document.getElementById('loginOverlay').style.display = 'none';
                 document.getElementById('appContent').style.display = 'flex';
-                document.getElementById('UserBadge').innerHTML = `👤 ${currentUser} (${currentRole})`;
+                document.getElementById('userBadge').innerHTML = `👤 ${currentUser} (${currentRole})`;
                 initMap();
                 return true;
             } else {
